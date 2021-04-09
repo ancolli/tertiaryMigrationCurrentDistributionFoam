@@ -5,7 +5,7 @@ DOI:
 
 # tertiaryCurrentDistributionFoam
 It is described how to simulate tertiary current distribution (including the effect of migration of ions) in electrochemical reactors with the help of OpenFOAM, the developed solver potentialMigrConcentrationFoam and the BC as codedMixed. It shows how to pre-process, run and post-process a basic case involving in a 2D domain. 
-The proposed strategy allows to have as an input k-th electrochemical reactions per electrode.
+The proposed strategy allows to have as an input k-th electrochemical reactions per electrode. Fully functional in OpenFOAM version 8.
 
 # Disclaimer
 This offering is not approved or endorsed by OpeFOAM Foundation, producer and distributor of the OpenFOAM software via www.openfoam.org.
@@ -34,7 +34,7 @@ _C)_ Run wmake.
 # #  B) Tutorial
 **1-** Paste tutorial inside OpenFOAM user directory (Run/Tutorials).  
 **2-** Enter to tutorial and open a Terminal.  
-**3-** Modify transport properties (conductivity, kinetic parameters, concentrations, equilibrium potentials, Sct, diffusion coefficients) inside constant/transportProperties.
-**4-** Modify control properties (kind of electric control, under-over relaxation parameter, maxPot, tolerances) inside constant/controlProperties 
-**5-** Run ./Allrun.  
+**3-** Modify transport properties (conductivity, kinetic parameters, concentrations, equilibrium potentials, Sct, diffusion coefficients) inside constant/transportProperties.  
+**4-** Modify control properties (kind of electric control, under-over relaxation parameter, maxPot, tolerances) inside constant/controlProperties.   
+**5-** Run ./Allrun.    
 
