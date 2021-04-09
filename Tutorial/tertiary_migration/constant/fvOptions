@@ -1,0 +1,248 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  6                                     |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      fvOptions;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+reaction1
+{
+    type            scalarCodedSource;
+    active          true;//yes;
+    name            reaction1;
+    selectionMode   all;//cellZone;
+   
+
+    scalarCodedSourceCoeffs
+    {
+        selectionMode   all;
+	fields        (C_H);
+
+        codeInclude
+        #{
+             #include "fvm.H"
+        #};
+
+        codeCorrect
+        #{
+            //Pout<< "**codeCorrect**" << endl;
+        #};
+
+        codeAddSup
+        #{
+	    dimensionedScalar cte("cte",dimensionSet(0,3,-1,0,-1,0,0), 1.3e8);//[kg m s K mol A cd]
+	    dimensionedScalar cte2("cte2",dimensionSet(0,-3,-1,0,1,0,0), 4.01e3);//[kg m s K mol A cd](5.55e4)^2*1.3e-6
+	   
+            const volScalarField& C_H = mesh_.lookupObject<volScalarField>("C_H");
+	    const volScalarField& C_OH = mesh_.lookupObject<volScalarField>("C_OH");  
+
+	    dimensionedScalar cter("cter",dimensionSet(0,3,-1,0,-1,0,0), 7e6);//[kg m s K mol A cd]
+	    dimensionedScalar cted("cted",dimensionSet(0,0,-1,0,0,0,0), 34.4e6);//[kg m s K mol
+          
+	    const volScalarField& C_HSO4 = mesh_.lookupObject<volScalarField>("C_HSO4");  
+            const volScalarField& C_SO4 = mesh_.lookupObject<volScalarField>("C_SO4");
+
+
+            eqn += cte2 - cte*fvm::Sp(C_OH, C_H) + cted*C_HSO4 - cter*fvm::Sp(C_SO4, C_H);
+        #};
+
+        codeSetValue
+        #{
+            //Pout<< "**codeSetValue**" << endl;
+        #};
+
+        // Dummy entry. Make dependent on above to trigger recompilation
+        code
+        #{
+            $codeInclude
+            $codeCorrect
+            $codeAddSup
+            $codeSetValue
+        #};
+    }
+
+    sourceTimeCoeffs
+    {
+        // Dummy entry
+    }
+}
+
+reaction2
+{
+    type            scalarCodedSource;
+    active          true;//yes;
+    name            reaction2;
+    selectionMode   all;//cellZone;
+   
+
+    scalarCodedSourceCoeffs
+    {
+        selectionMode   all;
+	fields        (C_OH);
+
+        codeInclude
+        #{
+             #include "fvm.H"
+        #};
+
+        codeCorrect
+        #{
+            //Pout<< "**codeCorrect**" << endl;
+        #};
+
+        codeAddSup
+        #{
+	    dimensionedScalar cte("cte",dimensionSet(0,3,-1,0,-1,0,0), 1.3e8);//[kg m s K mol A cd]
+	    dimensionedScalar cte2("cte2",dimensionSet(0,-3,-1,0,1,0,0), 4.01e3);//[kg m s K mol A cd](5.55e4)^2*1.3e-6
+	   
+            const volScalarField& C_H = mesh_.lookupObject<volScalarField>("C_H");
+	    const volScalarField& C_OH = mesh_.lookupObject<volScalarField>("C_OH");  
+          
+            eqn += cte2 - cte*fvm::Sp(C_H, C_OH);
+        #};
+
+        codeSetValue
+        #{
+            //Pout<< "**codeSetValue**" << endl;
+        #};
+
+        // Dummy entry. Make dependent on above to trigger recompilation
+        code
+        #{
+            $codeInclude
+            $codeCorrect
+            $codeAddSup
+            $codeSetValue
+        #};
+    }
+
+    sourceTimeCoeffs
+    {
+        // Dummy entry
+    }
+}
+
+reaction3
+{
+    type            scalarCodedSource;
+    active          true;//yes;
+    name            reaction3;
+    selectionMode   all;//cellZone;
+   
+
+    scalarCodedSourceCoeffs
+    {
+        selectionMode   all;
+	fields        (C_SO4);
+
+        codeInclude
+        #{
+             #include "fvm.H"
+        #};
+
+        codeCorrect
+        #{
+            //Pout<< "**codeCorrect**" << endl;
+        #};
+
+        codeAddSup
+        #{
+	    dimensionedScalar cter("cter",dimensionSet(0,3,-1,0,-1,0,0), 7e6);//[kg m s K mol A cd]
+	    dimensionedScalar cted("cted",dimensionSet(0,0,-1,0,0,0,0), 34.4e6);//[kg m s K mol A cd]
+	   
+            const volScalarField& C_H = mesh_.lookupObject<volScalarField>("C_H");
+	    const volScalarField& C_HSO4 = mesh_.lookupObject<volScalarField>("C_HSO4");  
+            const volScalarField& C_SO4 = mesh_.lookupObject<volScalarField>("C_SO4");
+
+            eqn += cted*C_HSO4 - cter*fvm::Sp(C_H, C_SO4);
+        #};
+
+        codeSetValue
+        #{
+            //Pout<< "**codeSetValue**" << endl;
+        #};
+
+        // Dummy entry. Make dependent on above to trigger recompilation
+        code
+        #{
+            $codeInclude
+            $codeCorrect
+            $codeAddSup
+            $codeSetValue
+        #};
+    }
+
+    sourceTimeCoeffs
+    {
+        // Dummy entry
+    }
+}
+
+reaction4
+{
+    type            scalarCodedSource;
+    active          true;//yes;
+    name            reaction4;
+    selectionMode   all;//cellZone;
+   
+
+    scalarCodedSourceCoeffs
+    {
+        selectionMode   all;
+	fields        (C_HSO4);
+
+        codeInclude
+        #{
+             #include "fvm.H"
+        #};
+
+        codeCorrect
+        #{
+            //Pout<< "**codeCorrect**" << endl;
+        #};
+
+        codeAddSup
+        #{
+	    dimensionedScalar cter("cter",dimensionSet(0,3,-1,0,-1,0,0), 7e6);//[kg m s K mol A cd]
+	    dimensionedScalar cted("cted",dimensionSet(0,0,-1,0,0,0,0), 34.4e6);//[kg m s K mol A cd]
+	   
+            const volScalarField& C_H = mesh_.lookupObject<volScalarField>("C_H");
+	    const volScalarField& C_HSO4 = mesh_.lookupObject<volScalarField>("C_HSO4");  
+            const volScalarField& C_SO4 = mesh_.lookupObject<volScalarField>("C_SO4");
+
+            eqn += -fvm::Sp(cted, C_HSO4) + cter*C_H*C_SO4;
+        #};
+
+        codeSetValue
+        #{
+            //Pout<< "**codeSetValue**" << endl;
+        #};
+
+        // Dummy entry. Make dependent on above to trigger recompilation
+        code
+        #{
+            $codeInclude
+            $codeCorrect
+            $codeAddSup
+            $codeSetValue
+        #};
+    }
+
+    sourceTimeCoeffs
+    {
+        // Dummy entry
+    }
+}
+
+// ************************************************************************* //
+

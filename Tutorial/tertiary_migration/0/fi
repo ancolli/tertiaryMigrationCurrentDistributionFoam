@@ -1,0 +1,208 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  8.0                                   |
+|   \\  /    A nd           | Web:      http://www.OpenFOAM.org               |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      fi;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+#include "include/controlProperties"
+
+dimensions      [1 2 -3 0 0 -1 0];// V = kg*m^2/(A*s^3)
+
+internalField   uniform	#calc "(mag($ref)+$startPot)/2";
+
+boundaryField
+{
+    "wall_.*"       
+    {
+        type            zeroGradient;
+    }
+
+    wall_anode       
+    {
+    type            codedMixed;
+    
+    refValue        uniform #calc "($startPot-mag($ref))";//$internalField;//
+    refGradient     uniform 0;
+    valueFraction   uniform 1;
+
+    name    anode_fi;   // name of generated BC
+
+    code
+    #{
+        const fvPatch& p = this->patch();                   
+    	label patchID = p.patch().boundaryMesh().findPatchID("wall_anode");      
+        const fvMesh& mesh = patch().boundaryMesh().mesh();
+
+        const surfaceScalarField& electroCon_ = this->db().objectRegistry::template lookupObject<surfaceScalarField>("electroCon");   // Desired field 1
+        const volScalarField& kf_ = this->db().objectRegistry::template lookupObject<volScalarField>("keff");   // Desired field 1
+        const volScalarField& fi_ = this->db().objectRegistry::template lookupObject<volScalarField>("fi"); // Desired field 2
+        const volScalarField& Con_M = this->db().objectRegistry::template lookupObject<volScalarField>("C_OH");
+
+        scalarField electroCon_boundary = electroCon_.boundaryField()[patchID];
+	scalarField kf_boundary = kf_.boundaryField()[patchID];
+                                             
+        scalarField fi_boundary = fi_.boundaryField()[patchID];                                           
+	scalarField C_M_boundary = Con_M.boundaryField()[patchID];
+        
+        scalarField delta = 1.0/mesh.deltaCoeffs().boundaryField()[patchID]; 
+
+        const dictionary& kineticProperties = db().lookupObject<IOdictionary>("transportProperties");
+        const dictionary& Results = db().lookupObject<IOdictionary>("Results");
+
+	const scalar nu_e = readScalar(kineticProperties.lookup("nu_e"));
+	const scalar nu_k = readScalar(kineticProperties.lookup("nu_k"));
+        
+        scalar j0_Ni = readScalar(kineticProperties.lookup("j0_Ni")); 
+        scalar ba_Ni = readScalar(kineticProperties.lookup("ba_Ni"));
+	scalar bc_Ni = readScalar(kineticProperties.lookup("bc_Ni"));
+	scalar E0 = readScalar(kineticProperties.lookup("E0"));
+
+	scalar j0_O2 = readScalar(kineticProperties.lookup("j0_O2")); 
+        scalar ba_O2 = readScalar(kineticProperties.lookup("ba_O2"));
+	scalar E0_O2 = readScalar(kineticProperties.lookup("E0_O2"));
+
+
+	const scalar C_Minf = readScalar(kineticProperties.lookup("C_OHinf")) ;
+
+        scalar Vcell = readScalar(Results.lookup("Vcell"));
+
+	scalarField jota_k = j0_Ni*C_M_boundary/C_Minf*exp((Vcell-fi_boundary-E0)/ba_Ni); 
+	scalarField jota_nok = -j0_Ni*exp((Vcell-fi_boundary-E0)/bc_Ni);
+	scalarField jota_O2 = j0_O2*exp((Vcell-fi_boundary-E0_O2)/ba_O2);                   
+
+	scalarField k0 = electroCon_boundary/delta;
+                                                      
+        const scalar F = 96485.0;
+
+
+	const dictionary& speciesProperties = db().lookupObject<IOdictionary>("speciesProperties");
+	const dimensionedScalar Deff_(speciesProperties.subDict("OH").lookup("D"));
+	const dimensionedScalar z_(speciesProperties.subDict("OH").lookup("z"));
+
+	const dimensionedScalar Deff_H(speciesProperties.subDict("H").lookup("D"));
+
+        scalarField A = nu_k*z_.value()/nu_e*(1/k0)/Deff_.value()*(jota_k/ba_Ni+jota_nok/bc_Ni) + (1/k0)/Deff_H.value()*jota_O2/ba_O2;                            
+	scalarField B = nu_k*z_.value()/nu_e*(1/k0)/Deff_.value()*((1+fi_boundary/ba_Ni)*jota_k+(1+fi_boundary/bc_Ni)*jota_nok) + (1/k0)/Deff_H.value()*(1+fi_boundary/ba_O2)*jota_O2; 
+         
+	this->refValue() = B/A;
+        this->refGrad() = 0;
+        this->valueFraction() = A/(A+1); 
+    #};
+ 
+    /*codeInclude
+    #{
+        #include "fvCFD.H"
+        #include "fvcSnGrad.H"
+    #};
+
+    codeOptions
+    #{
+        -I$(LIB_SRC)/finiteVolume/lnInclude \
+            -I$(LIB_SRC)/meshTools/lnInclude
+    #};*/
+
+    }
+
+    wall_cathode      
+    {
+
+    type            codedMixed;
+    
+    refValue        uniform #calc "(mag($ref))";//$internalField;//
+    refGradient     uniform 0;
+    valueFraction   uniform 1;
+
+    name    cathode_fi;   // name of generated BC
+
+    code
+    #{
+        const fvPatch& p = this->patch();                                                                
+    	label patchID = p.patch().boundaryMesh().findPatchID("wall_cathode");                              
+        const fvMesh& mesh = patch().boundaryMesh().mesh();
+
+	const surfaceScalarField& electroCon_ = this->db().objectRegistry::template lookupObject<surfaceScalarField>("electroCon");   // Desired field 1
+        const volScalarField& kf_ = this->db().objectRegistry::template lookupObject<volScalarField>("keff");   
+        const volScalarField& fi_ = this->db().objectRegistry::template lookupObject<volScalarField>("fi");    
+        const volScalarField& Con_M = this->db().objectRegistry::template lookupObject<volScalarField>("C_OH");
+                                 
+        scalarField electroCon_boundary = electroCon_.boundaryField()[patchID];
+
+
+	scalarField kf_boundary = kf_.boundaryField()[patchID];                                              
+        scalarField fi_boundary = fi_.boundaryField()[patchID];   
+                                              
+        scalarField C_M_boundary = Con_M.boundaryField()[patchID];                                            
+
+        scalarField delta = 1.0/mesh.deltaCoeffs().boundaryField()[patchID]; 
+
+
+        const dictionary& kineticProperties = db().lookupObject<IOdictionary>("transportProperties");
+
+	const scalar nu_e = readScalar(kineticProperties.lookup("nu_e_c"));
+	const scalar nu_k = readScalar(kineticProperties.lookup("nu_k_c"));
+     
+        const scalar j0_H2 = readScalar(kineticProperties.lookup("j0_H2"));
+        const scalar bc_H2 = readScalar(kineticProperties.lookup("bc_H2"));
+	const scalar E0_H2 = readScalar(kineticProperties.lookup("E0_H2"));
+	
+	const scalar C_Minf = readScalar(kineticProperties.lookup("C_OHinf"));
+
+	scalarField jota_k = -j0_H2*exp((-fi_boundary-E0_H2)/bc_H2);                        
+   	//scalarField jota_nok = j0_H2(exp((-fi_boundary)/ba_H2));//*C_M_boundary/C_Minf
+
+        scalarField k0 = electroCon_boundary/delta;
+                                                      
+        const scalar F = 96485.0;
+
+	const dictionary& speciesProperties = db().lookupObject<IOdictionary>("speciesProperties");
+	const dimensionedScalar Deff_(speciesProperties.subDict("OH").lookup("D"));
+	const dimensionedScalar z_(speciesProperties.subDict("OH").lookup("z"));
+
+	scalarField A = nu_k*z_.value()/nu_e*(1/k0)/Deff_.value()*(jota_k/bc_H2);//+jota_nok/ba_SS316       
+	scalarField B = nu_k*z_.value()/nu_e*(1/k0)/Deff_.value()*((1+fi_boundary/bc_H2)*jota_k);//+(1+fi_boundary/ba_SS316)*jota_nok
+
+	this->refValue() = B/A;
+        this->refGrad() = 0;
+        this->valueFraction() = A/(A+1); 
+    #};
+ 
+    /*codeInclude
+    #{
+        #include "fvCFD.H"
+        #include "fvcSnGrad.H"
+    #};
+
+    codeOptions
+    #{
+        -I$(LIB_SRC)/finiteVolume/lnInclude \
+            -I$(LIB_SRC)/meshTools/lnInclude
+    #};*/
+    }
+
+    ".*let"
+    {
+        type            zeroGradient;
+    }
+ 
+    wall_isolation
+    {
+        type            zeroGradient;
+    }
+
+    frontAndBack
+    {
+        type            empty;
+    }
+
+}
+
+// ************************************************************************* //

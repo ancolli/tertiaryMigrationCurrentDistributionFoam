@@ -1,0 +1,161 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  6                                     |
+|   \\  /    A nd           | Web:      http://www.OpenFOAM.org               |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      C_SO4;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+#include "include/transportProperties"
+
+dimensions      [0 -3 0 0 1 0 0];
+
+internalField   uniform $C_SO4inf;
+
+boundaryField
+{
+
+
+    wall_cathode       
+    {
+    type            codedMixed;
+    
+    refValue        $internalField;
+    refGradient     uniform 0;
+    valueFraction   uniform 1;
+
+    name    cathodeC_SO4;   // name of generated BC
+
+    code
+    #{
+        const fvPatch& p = this->patch();                                                                          // Actual boundary/patch
+    	label patchID = p.patch().boundaryMesh().findPatchID("wall_cathode");                                       // Desired patch ID
+        const fvMesh& mesh = patch().boundaryMesh().mesh();
+	
+	const dictionary& speciesProperties = db().lookupObject<IOdictionary>("speciesProperties");
+
+    	const dimensionedScalar Deff_(speciesProperties.subDict("SO4").lookup("D"));
+	const dimensionedScalar u_(speciesProperties.subDict("SO4").lookup("u"));
+	const dimensionedScalar z_(speciesProperties.subDict("SO4").lookup("z"));
+        
+        const volScalarField& fi_ = this->db().objectRegistry::template lookupObject<volScalarField>("fi"); // Desired field 2
+	scalarField grad_fi = -fi_.boundaryField()[patchID].snGrad();
+
+	const volScalarField& kf_ = this->db().objectRegistry::template lookupObject<volScalarField>("keff");   // Desired field 1
+	scalarField kf_boundary = kf_.boundaryField()[patchID];
+	//const volScalarField& electroneut_ = this->db().objectRegistry::template lookupObject<volScalarField>("electroneut");   // Desired field 1
+	//scalarField electroneut_boundary = electroneut_.boundaryField()[patchID];
+
+        scalarField delta = 1.0/mesh.deltaCoeffs().boundaryField()[patchID]; 
+	
+        //scalar F = readScalar(kineticProperties.lookup("F"));
+	const scalar F = 96485.0;                                                           
+        
+	scalarField ak = -F*delta*z_.value()*u_.value()/Deff_.value()*grad_fi; 
+
+        this->refValue() = 0;
+        this->refGrad() = 0;
+        this->valueFraction() = ak/(ak+1);
+    #};
+ 
+    /*codeInclude
+    #{
+        #include "fvCFD.H"
+        #include "fvcSnGrad.H"
+    #};
+
+    codeOptions
+    #{
+        -I$(LIB_SRC)/finiteVolume/lnInclude \
+            -I$(LIB_SRC)/meshTools/lnInclude
+    #};*/
+    }
+
+    wall_anode       
+    {
+
+    type            codedMixed;
+    
+    refValue        $internalField;
+    refGradient     uniform 0;
+    valueFraction   uniform 1;
+
+    name    anodeC_SO4;   // name of generated BC
+
+    code
+    #{
+	const fvPatch& p = this->patch();                                                                          // Actual boundary/patch
+    	label patchID = p.patch().boundaryMesh().findPatchID("wall_anode");                                       // Desired patch ID
+        const fvMesh& mesh = patch().boundaryMesh().mesh();
+	
+	const dictionary& speciesProperties = db().lookupObject<IOdictionary>("speciesProperties");
+
+    	const dimensionedScalar Deff_(speciesProperties.subDict("SO4").lookup("D"));
+	const dimensionedScalar u_(speciesProperties.subDict("SO4").lookup("u"));
+	const dimensionedScalar z_(speciesProperties.subDict("SO4").lookup("z"));
+        
+        const volScalarField& fi_ = this->db().objectRegistry::template lookupObject<volScalarField>("fi"); // Desired field 2 
+	scalarField grad_fi = -fi_.boundaryField()[patchID].snGrad();
+
+	const volScalarField& kf_ = this->db().objectRegistry::template lookupObject<volScalarField>("keff");   // Desired field 1
+	scalarField kf_boundary = kf_.boundaryField()[patchID];
+	//const volScalarField& electroneut_ = this->db().objectRegistry::template lookupObject<volScalarField>("electroneut");   // Desired field 1
+	//scalarField electroneut_boundary = electroneut_.boundaryField()[patchID];
+
+        scalarField delta = 1.0/mesh.deltaCoeffs().boundaryField()[patchID]; 
+	
+        //scalar F = readScalar(kineticProperties.lookup("F"));
+	const scalar F = 96485.0;                                                     
+        
+	scalarField ak = -F*delta*z_.value()*u_.value()/Deff_.value()*grad_fi;        
+
+        this->refValue() = 0;
+        this->refGrad() = 0;
+        this->valueFraction() = ak/(ak+1);  
+    #};
+ 
+    /*codeInclude
+    #{
+        #include "fvCFD.H"
+        #include "fvcSnGrad.H"
+    #};
+
+    codeOptions
+    #{
+        -I$(LIB_SRC)/finiteVolume/lnInclude \
+            -I$(LIB_SRC)/meshTools/lnInclude
+    #};*/
+
+    } 
+
+    inlet
+    {
+        type            fixedValue;
+	value		uniform $C_SO4inf;
+    }
+
+    outlet
+    {
+        type            zeroGradient;
+    }
+
+    wall_isolation
+    {
+        type            zeroGradient;
+    }
+
+    frontAndBack
+    {
+        type            empty;   
+    }    
+ 
+}
+
+// ************************************************************************* //

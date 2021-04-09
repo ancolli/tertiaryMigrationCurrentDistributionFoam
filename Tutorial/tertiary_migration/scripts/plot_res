@@ -1,0 +1,14 @@
+set term x11 persist
+
+set logscale y
+set ylabel 'Residual'
+set xlabel 'Iteration'
+plot 	"< cat log.migration | grep 'Solving for C_OH' 	| cut -d' ' -f9 | tr -d ','" every 1 with lines title 'COH',\
+	"< cat log.migration | grep 'Solving for C_SO4' 	| cut -d' ' -f9 | tr -d ','" every 1 with lines title 'CSO4' ,\
+	"< cat log.migration | grep 'Solving for C_H' 	| cut -d' ' -f9 | tr -d ','" every 2 with lines title 'C_H' ,\
+	"< cat log.migration | grep 'Solving for C_HSO4' 	| cut -d' ' -f9 | tr -d ','" every 1 with lines title 'CHSO4' ,\
+	"< cat log.migration | grep 'Solving for C_Na' 	| cut -d' ' -f9 | tr -d ','" every 1 with lines title 'CNa' ,\
+	"< cat log.migration | grep 'Solving for fi' 	| cut -d' ' -f9 | tr -d ','" every 1 with lines title 'fi' 
+	
+pause 10
+reread

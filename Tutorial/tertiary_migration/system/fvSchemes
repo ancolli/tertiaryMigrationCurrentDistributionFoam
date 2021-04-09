@@ -1,0 +1,58 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2.2.0                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      fvSchemes;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+ddtSchemes
+{
+    default         steadyState;// backward;//
+}
+
+gradSchemes
+{
+    default	    leastSquares;//cellLimited Gauss linear 1;//fourth;//Gauss linear;//
+}
+
+divSchemes
+{
+    default         bounded Gauss limitedLinear01 1;//bounded Gauss upwind;//Gauss QUICK;//limitedLinear 1;//bounded Gauss linear;//
+    //div(phi,C_)         
+}
+
+laplacianSchemes
+{
+    default         Gauss linear corrected;//Gauss cubic limited 0;//Gauss linear limited 1;//limited 1;//none;//
+   // laplacian(D_ox,C_ox) Gauss linear corrected; //// corrected when orthogonality is < 60
+   // laplacian(D_red,C_red) Gauss linear corrected; //Gauss linear limited 1;//// corrected when orthogonality is < 60
+   // laplacian(keff,fi) Gauss linear corrected;
+}
+
+interpolationSchemes
+{
+    default         linear;
+}
+
+snGradSchemes
+{
+    default         corrected;//limited 0.333;//limited corrected 0.5;//orthogonal;// corrected when orthogonality is < 60
+}
+
+fluxRequired
+{
+    default         yes;
+}
+
+
+// ************************************************************************* //

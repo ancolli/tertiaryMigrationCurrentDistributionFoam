@@ -1,0 +1,20 @@
+//*--------------------------------*- C++ -*----------------------------------*\
+//| =========                 |                                                 |
+//| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+//|  \\    /   O peration     | Version:  8.0                                   |
+//|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+//|    \\/     M anipulation  |                                                 |
+//\*---------------------------------------------------------------------------*/
+ 
+partialCurrentDensity
+{
+        type        speciesMigrationWallFlux;//
+        libs        ("libspeciesMigrationWallFluxFunctionObject.so");//
+	patches     ("wall_cathode" "wall_anode");
+	CName	    OH;
+}
+
+//\*---------------------------------------------------------------------------*/
+
+
+

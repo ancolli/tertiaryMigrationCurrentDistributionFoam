@@ -1,0 +1,58 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  8.0                                   |
+|   \\  /    A nd           | Web:      http://www.OpenFOAM.org               |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      speciesProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+OH
+{
+    diffusionModel  constant;
+    D	D	[0 2 -1 0 0 0 0]	  5.26E-09;
+    u	u	[-1 0 1 0 1 0 0]	  2.12E-12;
+    z	z	[0 0 0 0 0 0 0]		-1;
+}
+
+Na
+{
+    diffusionModel  constant;
+    D	D	[0 2 -1 0 0 0 0]	1.334E-09;
+    u	u	[-1 0 1 0 1 0 0]	 5.38E-13;
+    z	z	[0 0 0 0 0 0 0]		1;
+}
+
+SO4
+{
+    diffusionModel  constant;
+     D	D	[0 2 -1 0 0 0 0]	1.069E-09;
+    u	u	[-1 0 1 0 1 0 0]	  4.3E-13;
+    z	z	[0 0 0 0 0 0 0]	       -2;
+}
+
+H
+{
+    diffusionModel  constant;
+    D	D	[0 2 -1 0 0 0 0]	 9.3E-09;
+    u	u	[-1 0 1 0 1 0 0]	3.75E-12;
+    z	z	[0 0 0 0 0 0 0]	       1;
+}
+
+HSO4
+{
+    diffusionModel  constant;
+    D	D	[0 2 -1 0 0 0 0]	1.33E-09;
+    u	u	[-1 0 1 0 1 0 0]	5.37E-13;
+    z	z	[0 0 0 0 0 0 0]	      -1;
+}
+
+
+// ************************************************************************* //
