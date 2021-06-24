@@ -61,9 +61,7 @@ int main(int argc, char *argv[])
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
 	while (simple.correctNonOrthogonal())
-        {
-		        
-	
+        {		  	
 	//complementaries calculations
 
 		#include "surfaceEqn.H"
@@ -75,8 +73,6 @@ int main(int argc, char *argv[])
 	//concentration fields
 
 		#include "CEqns.H"
-
-
         }
 
         runTime.write();
