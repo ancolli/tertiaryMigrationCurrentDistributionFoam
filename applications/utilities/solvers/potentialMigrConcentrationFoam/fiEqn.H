@@ -1,5 +1,6 @@
 {
-        volScalarField Dturb
+        //turbulent diffusivity	
+	volScalarField Dturb
 	(
 		"Dturb",
 		nut/Sct
