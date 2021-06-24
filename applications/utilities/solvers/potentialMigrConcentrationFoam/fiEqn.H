@@ -1,19 +1,20 @@
 {
+        volScalarField Dturb
+	(
+		"Dturb",
+		nut/Sct
+	);	
+	
 //diffusion term
     volScalarField difterm(0*F*fvc::laplacian(speciesList[0].D(), speciesList[0], "laplacian(D,C_species)"));
-    //volScalarField divterm(0*F*fvc::div(phi, speciesList[0].z()*speciesList[0], "div(phi,C_species)"));
     volScalarField kff(0*F*F*speciesList[0].z()*speciesList[0].z()*speciesList[0].u()*speciesList[0]);
     volScalarField carga(0*speciesList[0].z()*speciesList[0]);
-    //volScalarField electroCon(0*speciesList[0].z()*speciesList[0].z()*speciesList[0].D()*speciesList[0]);
-    
+        
     forAll(speciesNameList, i)
     {
 	carga += speciesList[i].z()*speciesList[i];
-	//electroCon += speciesList[i].z()*speciesList[i].z()*speciesList[i].D()*speciesList[i];
-	difterm += F*speciesList[i].z()*fvc::laplacian(speciesList[i].D(), speciesList[i], "laplacian(D,C_species)");
-	//divterm += F*speciesList[i].z()*fvc::div(phi, speciesList[i], "div(phi,C_species)");
+	difterm += F*speciesList[i].z()*fvc::laplacian(speciesList[i].D()+Dturb, speciesList[i], "laplacian(D,C_species)");
        	kff += F*F*speciesList[i].z()*speciesList[i].z()*speciesList[i].u()*speciesList[i];
-	//electroCon += F*F*speciesList[i].z()*speciesList[i].z()*speciesList[i].u()*speciesList[i]/speciesList[i].D();
     };
 
 //conductivity field  
@@ -23,19 +24,16 @@
     diffterm == difterm;
     
     Info<< "Min/max keff:" << min(keff).value() << ' ' << max(keff).value() << endl;
-    Info<< "Max electroneutrality:" << max(mag(electroneut)).value() << endl;//<< max(mag(electroneut.internalField())).value() << endl;
-    //Info<< "Min/max difterm:" << min(difterm).value() << ' ' << max(difterm).value() << endl;
+    Info<< "Max electroneutrality:" << max(mag(electroneut)).value() << endl;
+    
 //potential field
     fi.storePrevIter();
-    solve //fvScalarMatrix fi_eq//
+    solve 
     ( 
        fvm::laplacian(keff, fi) == - diffterm  
     );
     
     fi.relax();
-
-    //fi_eq.relax();
-    //fi_eq.solve();
 
 scalar maxPot = readScalar(controlProperties.lookup("maxPot"));
 scalar minPot = readScalar(controlProperties.lookup("minPot"));
