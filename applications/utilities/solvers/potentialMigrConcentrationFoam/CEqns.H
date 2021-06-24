@@ -4,14 +4,8 @@
 	scalar relax_init = readScalar(mesh.solutionDict().subDict("relaxationFactors").subDict("equations").lookup("relax_init"));
 	scalar relax_end = readScalar(mesh.solutionDict().subDict("relaxationFactors").subDict("equations").lookup("relax_end"));
 	scalar switch_iter = readScalar(mesh.solutionDict().subDict("relaxationFactors").subDict("equations").lookup("switch_iter"));
-	//dictionary relaxation = mesh.solutionDict().subDict("relaxationFactors").subDict("equations");
-	//dictionary relaxation_end = mesh.solutionDict().subDict("relaxationFactors").subDict("equations");
 	dimensionedScalar MinSpecies("MinSpecies",dimensionSet(0,-3,0,0,1,0,0), SMALL);
-	//dimensionedScalar MaxSpecies("MaxSpecies",dimensionSet(0,-3,0,0,1,0,0), 3000.0);
-
 	
-	//Results.set("iter", ++iter); 
-
 	//turbulent diffusivity	
 	volScalarField Dturb
 	(
@@ -49,27 +43,12 @@
 	    
 	// impose electroneutrality
 	    dimensionedScalar MINIMO("MINIMO",dimensionSet(0,-3,0,0,1,0,0), SMALL);
-	    //dimensionedScalar MAXIMO("MAXIMO",dimensionSet(0,0,0,0,0,0,0), 0.99);
 	    speciesList[i] == max(MINIMO, speciesList[i]*(1-F*F*speciesList[i].z()*speciesList[i].u()*electroneut/keff));
-	    //bound(speciesList[i], MinSpecies);
 	    speciesList[i].correctBoundaryConditions();
-	    //bound(speciesList[i], MinSpecies);
 	    speciesList[i] == max(MINIMO, speciesList[i]);
-
-	    /*forAll(mesh.boundaryMesh(), p_ith)
-    	    { 
-		
-			speciesList[i].boundaryFieldRef()[p_ith] == speciesList[i].boundaryFieldRef()[p_ith]*(1-F.value()*F.value()*speciesList[i].z().value()*speciesList[i].u().value()*electroneut.boundaryFieldRef()[p_ith]/keff.boundaryFieldRef()[p_ith]);//
-            } */
-
-	    //
 	
 	    Info<< "Min/max C_" << speciesNameList[i] << ":" << min(speciesList[i]).value() << ' '
-            << max(speciesList[i]).value() << endl;
-
-	    //Info<< "Min/max multiplicador_" << speciesNameList[i] << ":" << min((1-speciesList[i].z()*speciesList[i].D()*electroneut/electroconductivity)).value() << ' '
-            //<< max((1-speciesList[i].z()*speciesList[i].D()*electroneut/electroconductivity)).value() << endl;
-	  
+            << max(speciesList[i]).value() << endl;	  
 	}
 }
 
