@@ -1,11 +1,12 @@
 # v1.0.0
 
-Cite as: Ind. Eng. Chem. Res. 2021, 60, 32, 11927–11941
+Cite as: Ind. Eng. Chem. Res. 60 (2021) 11927
 DOI: https://doi.org/10.1021/acs.iecr.1c01884
 
 # tertiaryMigrationCurrentDistributionFoam
-It is described how to simulate tertiary current distribution (including the effect of migration of ions) in electrochemical reactors with the help of OpenFOAM, the developed solver potentialMigrConcentrationFoam and the BC as codedMixed. It shows how to pre-process, run and post-process a basic case involving in a 2D domain. 
-The proposed strategy allows to have as an input k-th electrochemical reactions per electrode. Fully functional in OpenFOAM version 8.
+The process of simulating tertiary current distribution, including the effect of ion migration, in electrochemical reactors is described using OpenFOAM, the custom-developed solver potentialMigrConcentrationFoam, and the codedMixed boundary condition. The workflow demonstrates how to pre-process, run, and post-process a basic case in a 2D domain.
+
+The proposed strategy supports the input of kk-th electrochemical reactions per electrode and is fully functional in OpenFOAM version 8 and version 2312.
 
 # Disclaimer
 This offering is not approved or endorsed by OpeFOAM Foundation, producer and distributor of the OpenFOAM software via www.openfoam.org.
